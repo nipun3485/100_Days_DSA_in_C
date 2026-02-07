@@ -20,7 +20,7 @@ I am Nipun Singh, a Semester 2 B.Tech CSE student at UPES. This challenge is aim
 ## Tech Stack
 - Programming Language: C  
 - Compiler: GCC  
-- Editor: gedit  
+- Editor: Gedit  
 - Version Control: Git  
 - Platform: GitHub  
 
