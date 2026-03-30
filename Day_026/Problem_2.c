@@ -1,115 +1,139 @@
-/*given the head of a singly linked list, the task is to remove a cycle if present. A cycle exists when a node's next pointer points back to a previous node, forming a loop. Internally, a variable pos denotes the index of the node where the cycle starts, but it is not passed as a parameter. The terminal will print true if a cycle is removed otherwise, it will print false.*/
+/*Design your implementation of the linked list. You can choose to use a singly or doubly linked list. A node in a singly linked list should have two attributes: val and next. val is the value of the current node, and next is a pointer/reference to the next node. If you want to use the doubly linked list, you will need one more attribute prev to indicate the previous node in the linked list. Assume all nodes in the linked list are 0-indexed.*/
+
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdbool.h>
 
-struct Node {
-    int data;
+// Node structure
+typedef struct Node {
+    int val;
     struct Node* next;
-};
+} Node;
 
-// Function to remove cycle
-bool removeCycle(struct Node* head) {
-    if (head == NULL) return false;
+// Linked List structure
+typedef struct {
+    Node* head;
+    int size;
+} MyLinkedList;
 
-    struct Node *slow = head, *fast = head;
-
-    // Step 1: Detect cycle
-    while (fast != NULL && fast->next != NULL) {
-        slow = slow->next;
-        fast = fast->next->next;
-
-        if (slow == fast) {
-            // Step 2: Find start of cycle
-            slow = head;
-
-            if (slow == fast) {
-                while (fast->next != slow)
-                    fast = fast->next;
-            } else {
-                while (slow->next != fast->next) {
-                    slow = slow->next;
-                    fast = fast->next;
-                }
-            }
-
-            // Step 3: Remove cycle
-            fast->next = NULL;
-            return true;
-        }
-    }
-
-    return false;
+// Constructor
+MyLinkedList* createLinkedList() {
+    MyLinkedList* obj = (MyLinkedList*)malloc(sizeof(MyLinkedList));
+    obj->head = NULL;
+    obj->size = 0;
+    return obj;
 }
 
-// Create new node
-struct Node* newNode(int data) {
-    struct Node* temp = (struct Node*)malloc(sizeof(struct Node));
-    temp->data = data;
-    temp->next = NULL;
-    return temp;
-}
+// Get value at index
+int get(MyLinkedList* obj, int index) {
+    if (index < 0 || index >= obj->size)
+        return -1;
 
-// Print linked list
-void printList(struct Node* head) {
-    struct Node* temp = head;
-    while (temp != NULL) {
-        printf("%d ", temp->data);
+    Node* temp = obj->head;
+    for (int i = 0; i < index; i++)
         temp = temp->next;
-    }
+
+    return temp->val;
 }
 
-// Main function
-int main() {
-    int n, pos;
-    scanf("%d", &n);
+// Add at head
+void addAtHead(MyLinkedList* obj, int val) {
+    Node* newNode = (Node*)malloc(sizeof(Node));
+    newNode->val = val;
+    newNode->next = obj->head;
 
-    if (n == 0) {
-        printf("false");
-        return 0;
+    obj->head = newNode;
+    obj->size++;
+}
+
+// Add at tail
+void addAtTail(MyLinkedList* obj, int val) {
+    Node* newNode = (Node*)malloc(sizeof(Node));
+    newNode->val = val;
+    newNode->next = NULL;
+
+    if (obj->head == NULL) {
+        obj->head = newNode;
+    } else {
+        Node* temp = obj->head;
+        while (temp->next != NULL)
+            temp = temp->next;
+        temp->next = newNode;
     }
 
-    struct Node* head = NULL;
-    struct Node* temp = NULL;
-    struct Node* tail = NULL;
+    obj->size++;
+}
 
-    // Input nodes
-    for (int i = 0; i < n; i++) {
-        int x;
-        scanf("%d", &x);
-        struct Node* new_node = newNode(x);
+// Add at index
+void addAtIndex(MyLinkedList* obj, int index, int val) {
+    if (index < 0 || index > obj->size)
+        return;
 
-        if (head == NULL) {
-            head = new_node;
-            tail = new_node;
-        } else {
-            tail->next = new_node;
-            tail = new_node;
-        }
+    if (index == 0) {
+        addAtHead(obj, val);
+        return;
     }
 
-    // Input position for cycle
-    scanf("%d", &pos);
+    Node* newNode = (Node*)malloc(sizeof(Node));
+    newNode->val = val;
 
-    // Create cycle if pos != -1
-    if (pos != -1) {
-        temp = head;
-        for (int i = 0; i < pos; i++) {
+    Node* temp = obj->head;
+    for (int i = 0; i < index - 1; i++)
+        temp = temp->next;
+
+    newNode->next = temp->next;
+    temp->next = newNode;
+
+    obj->size++;
+}
+
+// Delete at index
+void deleteAtIndex(MyLinkedList* obj, int index) {
+    if (index < 0 || index >= obj->size)
+        return;
+
+    Node* temp = obj->head;
+
+    if (index == 0) {
+        obj->head = temp->next;
+        free(temp);
+    } else {
+        Node* prev = NULL;
+        for (int i = 0; i < index; i++) {
+            prev = temp;
             temp = temp->next;
         }
-        tail->next = temp; // create loop
+        prev->next = temp->next;
+        free(temp);
     }
 
-    // Remove cycle
-    bool result = removeCycle(head);
+    obj->size--;
+}
 
-    if (result)
-        printf("true\n");
-    else
-        printf("false\n");
+// Display list (for testing)
+void printList(MyLinkedList* obj) {
+    Node* temp = obj->head;
+    while (temp != NULL) {
+        printf("%d -> ", temp->val);
+        temp = temp->next;
+    }
+    printf("NULL\n");
+}
 
-    // Print list after removing cycle
-    printList(head);
+// Main function (demo)
+int main() {
+    MyLinkedList* list = createLinkedList();
+
+    addAtHead(list, 10);
+    addAtTail(list, 20);
+    addAtTail(list, 30);
+    addAtIndex(list, 1, 15); // 10 -> 15 -> 20 -> 30
+
+    printList(list);
+
+    printf("Value at index 2: %d\n", get(list, 2));
+
+    deleteAtIndex(list, 1); // remove 15
+    printList(list);
 
     return 0;
 }
